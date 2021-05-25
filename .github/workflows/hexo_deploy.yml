@@ -1,48 +1,53 @@
-# This is a basic workflow to help you get started with Actions
-
+# 工作流名称
 name: hexo-deploy-ci
 
-# Controls when the action will run. 
+# 控制工作流的生效条件，这里设置为 分支 master 有新的推送时触发
 on:
-  # Triggers the workflow on push or pull request events but only for the main branch
   push:
     branches:
-      - main
+      - master
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+# 条件生效后要执行的任务
 jobs:
-  # This workflow contains a single job called "build"
+  # 这里是单个任务
   build:
-    # The type of runner that the job will run on
+    # 任务的执行类型
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    # 任务执行步骤
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - name: Checkout Repository main branch
+      # 检出仓库分支
+      - name: Checkout Repository master branch
         uses: actions/checkout@v2
-
+	
+	  # 指定 Node 版本
       - name: Setup Node.js 12.x
         uses: actions/setup-node@master
         with:
           node-version: "12.x"
-            
+      
+      # 安装代码需要的依赖
       - name: Install Dependencies
         run: |
           npm install hexo-cli -g
           npm install
       
+      # 利用 hexo 生成静态页面
       - name: Generate Page
         run: |
           hexo g
-          
+      
+      # 使用 rsync 将 public 文件夹传输至至服务器
       - name: rsync deployments
         uses: burnett01/rsync-deployments@4.1
         with:
           # 这里是 rsync 的参数 switches: -avzh --delete --exclude="" --include="" --filter=""
           switches: -avzr --delete
+          # 要同步的文件夹
           path: public/
+          # 服务器传输至的目录，上文中的 /home/baoxuebin/my-hexo-project
           remote_path: /home/baoxuebin/my-hexo-project
           remote_host: 81.69.252.147
           remote_user: root
+          # 密钥作为敏感信息，请勿直接使用；可以在 Github 仓库页面>>Settings>>secrets 添加
           remote_key: ${{ secrets.TENCENT_CLOUD_PRIVATE_KEY }}
