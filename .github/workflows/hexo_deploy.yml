@@ -19,8 +19,8 @@ jobs:
       # 检出仓库分支
       - name: Checkout Repository master branch
         uses: actions/checkout@v2
-	
-	  # 指定 Node 版本
+
+	    # 指定 Node 版本
       - name: Setup Node.js 12.x
         uses: actions/setup-node@master
         with:
