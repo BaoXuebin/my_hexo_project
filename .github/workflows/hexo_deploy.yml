@@ -1,0 +1,48 @@
+# This is a basic workflow to help you get started with Actions
+
+name: hexo-deploy-ci
+
+# Controls when the action will run. 
+on:
+  # Triggers the workflow on push or pull request events but only for the main branch
+  push:
+    branches:
+      - main
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - name: Checkout Repository main branch
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js 12.x
+        uses: actions/setup-node@master
+        with:
+          node-version: "12.x"
+            
+      - name: Install Dependencies
+        run: |
+          npm install hexo-cli -g
+          npm install
+      
+      - name: Generate Page
+        run: |
+          hexo g
+          
+      - name: rsync deployments
+        uses: burnett01/rsync-deployments@4.1
+        with:
+          # 这里是 rsync 的参数 switches: -avzh --delete --exclude="" --include="" --filter=""
+          switches: -avzr --delete
+          path: public/
+          remote_path: /home/baoxuebin/my-hexo-project
+          remote_host: 81.69.252.147
+          remote_user: root
+          remote_key: ${{ secrets.TENCENT_CLOUD_PRIVATE_KEY }}
